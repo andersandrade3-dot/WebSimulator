@@ -5,7 +5,7 @@
 | Requisito | Implementação |
 |---|---|
 | **HTTPS obrigatório** | Fornecido automaticamente pela Vercel e pelo Supabase, com cabeçalho `Strict-Transport-Security` (HSTS). |
-| **Autenticação obrigatória** | Supabase Auth (e-mail e senha ≥ 10 caracteres). `middleware.ts` bloqueia todas as rotas internas (`/dashboard`, `/simulator`, `/sessions`, `/admin`) e cada rota de API revalida `supabase.auth.getUser()` no servidor. |
+| **Autenticação sem atrito** | Supabase Auth criado no servidor (sem validação de e-mail): estudantes entram informando apenas o nome completo (+ código de turma opcional); professores e administradores entram na aba **Professor / Admin** com usuário (ou e-mail) e senha. `middleware.ts` bloqueia todas as rotas internas (`/dashboard`, `/simulator`, `/sessions`, `/admin`) e cada rota de API revalida `supabase.auth.getUser()` no servidor. |
 | **Proteção dos arquivos do simulador** | Os arquivos (`Simulador.swf`, XMLs e imagens) **não** ficam em `public/` nem no GitHub. Ficam em um **bucket privado** do Supabase Storage e são servidos apenas por `/api/sim/[...path]`, que exige usuário logado, conta `approved && active` e **sessão aberta não expirada**. Validação contra *path traversal* e lista restrita de extensões permitidas. |
 | **Controle de acesso e RLS** | Papéis `student`, `teacher`, `admin`. **Row Level Security (RLS)** ativo em todas as 7 tabelas. Estudantes só leem seus próprios dados; colunas `role`, `approved` e `active` não são graváveis por clientes (`grant update (full_name)` apenas). Professores veem apenas alunos de suas próprias turmas. |
 | **Proteção de credenciais** | `SUPABASE_SERVICE_ROLE_KEY` marcada com `import 'server-only'`, nunca enviada ao navegador e fora do Git (`.gitignore` bloqueia `.env*`). |

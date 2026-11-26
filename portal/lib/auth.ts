@@ -41,3 +41,10 @@ export function clientMeta(headers: Headers) {
   const ip = headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? null;
   return { ip, userAgent: headers.get('user-agent')?.slice(0, 300) ?? null };
 }
+
+export function displayLogin(email?: string | null): string {
+  if (!email) return '—';
+  if (email.endsWith('@estudante.intelsim.local')) return 'Acesso por nome';
+  if (email.endsWith('@equipe.intelsim.local')) return email.replace(/@equipe\.intelsim\.local$/, '');
+  return email;
+}

@@ -69,15 +69,15 @@ git push -u origin main
 1. No **Supabase → Authentication → URL Configuration**:
    - **Site URL**: `https://SEU-PROJETO.vercel.app` (ou seu domínio personalizado, se quiser conectar um depois).
    - **Redirect URLs**: adicione `https://SEU-PROJETO.vercel.app/**`.
-2. Abra o portal no navegador, clique em **Criar conta** e cadastre seu e-mail de professor/administrador (confirme o e-mail enviado pelo Supabase).
-3. No **Supabase → SQL Editor**, promova sua conta a administrador (substitua pelo seu e-mail):
+2. Abra o portal no navegador, clique em **Entrar → aba Professor / Admin → Criar conta sem validar e-mail** e cadastre seu nome, usuário (ou e-mail) e senha — não precisa confirmar e-mail.
+3. No **Supabase → SQL Editor**, promova sua conta a administrador (use o usuário cadastrado — se usou um usuário simples como `prof.anderson`, o identificador salvo é `prof.anderson@equipe.intelsim.local`; se usou e-mail, coloque o e-mail):
    ```sql
    update public.profiles
       set role = 'admin', approved = true
-    where email = 'seu@email.com';
+    where email = 'prof.anderson@equipe.intelsim.local';
    ```
-4. Entre no portal → **Painel** → crie uma turma (será gerado um **código da turma**, ex.: `A1B2C3D4`) → entregue esse código aos estudantes.
-5. Pronto! Cada estudante cria sua conta, informa o código da turma no painel e já pode abrir o simulador no navegador.
+4. Entre no portal → **Painel** → crie uma turma (opcional; será gerado um **código da turma**, ex.: `A1B2C3D4`).
+5. Pronto! Os estudantes entram na aba **Estudante** digitando **apenas o nome completo** (e o código da turma, se você quiser agrupar por turma) — sem e-mail, sem senha e sem confirmação.
 
 ## 6. Solução de problemas
 

@@ -1,4 +1,4 @@
-import { requireAdmin } from '@/lib/auth';
+import { requireAdmin, displayLogin } from '@/lib/auth';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { reapStaleSessions } from '@/lib/sessions';
 import { terminateSession, updateUser, updateSettings } from './actions';
@@ -59,11 +59,11 @@ export default async function AdminPage() {
       <section className="card" style={{ marginTop: '1rem' }}>
         <h2>Usuários</h2>
         <div className="table-wrap"><table>
-          <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Liberado</th><th>Ativo</th></tr></thead>
+          <thead><tr><th>Nome</th><th>Acesso / Login</th><th>Perfil</th><th>Liberado</th><th>Ativo</th></tr></thead>
           <tbody>
             {(users.data ?? []).map((u) => (
               <tr key={u.id}>
-                <td>{u.full_name || '—'}</td><td>{u.email}</td>
+                <td>{u.full_name || '—'}</td><td>{displayLogin(u.email)}</td>
                 <td>
                   <form action={updateUser} className="row" style={{ flexWrap: 'nowrap' }}>
                     <input type="hidden" name="user_id" value={u.id} /><input type="hidden" name="field" value="role" />
