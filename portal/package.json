@@ -1,0 +1,33 @@
+{
+  "name": "intel-simulator-online-portal",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "predev": "node scripts/prepare-assets.mjs",
+    "dev": "next dev",
+    "prebuild": "node scripts/prepare-assets.mjs",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "sim:prepare": "node scripts/prepare-assets.mjs",
+    "sim:upload": "node scripts/upload-sim-assets.mjs"
+  },
+  "dependencies": {
+    "@ruffle-rs/ruffle": "^0.8.0",
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.119.2",
+    "next": "^15.3.2",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "server-only": "^0.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "typescript": "^5.8.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

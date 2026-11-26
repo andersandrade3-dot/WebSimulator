@@ -1,0 +1,15 @@
+{
+  "name": "intel-sim-orchestrator",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Orquestrador de sessões do Intel Simulator Online (1 container por estudante + token do Guacamole)",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test \"test/**/*.test.js\""
+  },
+  "dependencies": {
+    "dockerode": "^4.0.2"
+  },
+  "engines": { "node": ">=20" }
+}

@@ -1,0 +1,28 @@
+# Único componente exposto à internet. TLS (Let's Encrypt) automático.
+
+# --- Tela remota (Guacamole) embutida no portal via <iframe> ---
+{$GUAC_HOST} {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "no-referrer"
+		# só o portal oficial pode embutir o simulador
+		Content-Security-Policy "frame-ancestors {$PORTAL_ORIGIN}"
+	}
+	reverse_proxy guacamole:8080 {
+		header_down -X-Frame-Options
+	}
+}
+
+# --- API do orquestrador (chamada pelo servidor do portal na Vercel) ---
+{$ORCH_HOST} {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+	}
+	reverse_proxy orchestrator:8787
+}
+
+# Nenhuma porta RDP/VNC/SSH-de-sessão/Docker é publicada. Somente 80/443.

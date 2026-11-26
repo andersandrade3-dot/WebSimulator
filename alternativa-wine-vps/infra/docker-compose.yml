@@ -1,0 +1,110 @@
+name: intel-sim
+
+# Rede onde vivem as sessões dos estudantes: INTERNAL = sem acesso à internet nem ao host.
+# O guacd tem IP fixo nela; cada sessão só aceita VNC desse IP (x11vnc -allow) + senha aleatória.
+networks:
+  sessions_net:
+    name: sessions_net
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+  backend:        # guacd, guacamole, orquestrador, proxy do docker
+    internal: true
+  public:         # somente o Caddy publica portas (80/443)
+
+services:
+  # ---- Imagem das sessões (não roda como serviço; apenas build) ----
+  session-image:
+    profiles: ["build"]
+    build: ./session-image
+    image: intel-sim-session:latest
+
+  # ---- Acesso restrito à API do Docker (o orquestrador NUNCA monta o docker.sock) ----
+  docker-proxy:
+    image: tecnativa/docker-socket-proxy:0.3.0
+    restart: unless-stopped
+    environment:
+      CONTAINERS: 1
+      POST: 1
+      DELETE: 1
+      ALLOW_START: 1
+      ALLOW_STOP: 1
+      IMAGES: 0
+      NETWORKS: 0
+      EXEC: 0
+      VOLUMES: 0
+      SERVICES: 0
+      SWARM: 0
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks: [backend]
+
+  guacd:
+    image: guacamole/guacd:1.6.0
+    restart: unless-stopped
+    networks:
+      backend: {}
+      sessions_net:
+        ipv4_address: 172.30.0.2
+
+  guacamole:
+    image: guacamole/guacamole:1.6.0
+    restart: unless-stopped
+    depends_on: [guacd]
+    environment:
+      GUACD_HOSTNAME: guacd
+      GUACD_PORT: 4822
+      EXTENSIONS: auth-json            # login SOMENTE por payload assinado pelo orquestrador
+      JSON_SECRET_KEY: ${GUAC_JSON_SECRET}
+      WEBAPP_CONTEXT: ROOT             # serve em https://GUAC_HOST/ (sem /guacamole)
+      API_SESSION_TIMEOUT: 30          # minutos de inatividade do token
+    networks: [backend]
+
+  orchestrator:
+    build: ../orchestrator
+    image: intel-sim-orchestrator:latest
+    restart: unless-stopped
+    depends_on: [docker-proxy, guacamole]
+    environment:
+      PORT: 8787
+      ORCH_API_TOKEN: ${ORCH_API_TOKEN}
+      DOCKER_HOST: tcp://docker-proxy:2375
+      SESSION_IMAGE: intel-sim-session:latest
+      SESSION_NETWORK: sessions_net
+      SIM_HOST_PATH: ${SIM_HOST_PATH}          # caminho ABSOLUTO no host (pasta original do simulador)
+      GUACAMOLE_URL: http://guacamole:8080
+      GUAC_JSON_SECRET: ${GUAC_JSON_SECRET}
+      GUACD_IP: 172.30.0.2
+      MAX_SESSIONS: ${MAX_SESSIONS:-10}        # teto de segurança (o limite "oficial" fica no Supabase)
+      IDLE_MINUTES: ${IDLE_MINUTES:-10}
+      SESSION_MEMORY_MB: ${SESSION_MEMORY_MB:-512}
+      SESSION_CPUS: ${SESSION_CPUS:-0.75}
+      SESSION_SCREEN: ${SESSION_SCREEN:-1280x720}
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+    networks:
+      backend: {}
+      # precisa alcançar o guacd/guacamole (backend); NÃO entra na sessions_net
+      public: {}                                # saída para o Supabase (HTTPS)
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on: [guacamole, orchestrator]
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      GUAC_HOST: ${GUAC_HOST}
+      ORCH_HOST: ${ORCH_HOST}
+      PORTAL_ORIGIN: ${PORTAL_ORIGIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [public, backend]
+
+volumes:
+  caddy_data:
+  caddy_config:

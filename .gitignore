@@ -1,0 +1,11 @@
+simulador/
+portal/sim-assets/
+portal/public/ruffle/
+node_modules/
+.next/
+.env
+.env.*
+!.env.example
+*.log
+.vercel/
+*.tsbuildinfo
